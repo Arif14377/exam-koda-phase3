@@ -5,7 +5,9 @@ import (
 	"log"
 
 	"github.com/Arif14377/exam-koda-phase3/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/matthewhartstonge/argon2"
 )
 
 type AuthRepo struct {
@@ -30,6 +32,29 @@ func (a *AuthRepo) Register(user models.AuthUser) error {
 }
 
 // Login
-func (a *AuthRepo) Login(email string, password string) error {
-	return nil
+func (a *AuthRepo) Login(user models.AuthUser) (*models.UserLogin, error) {
+	// dapatkan data user dengan email di database
+	sqlQuery := "SELECT id, email, password FROM users WHERE email = $1"
+	rows, err := a.db.Query(context.Background(), sqlQuery, user.Email)
+	if err != nil {
+		log.Printf("Failed to get rows data: \n%v", err)
+		return &models.UserLogin{}, err
+	}
+	defer rows.Close()
+
+	userLogin, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[models.UserLogin])
+	if err != nil {
+		log.Printf("User not found: \n%v", err)
+		return &models.UserLogin{}, err
+	}
+
+	// cek password hash
+	pwdOk, err := argon2.VerifyEncoded([]byte(user.Password), []byte(userLogin.Password))
+	if !pwdOk {
+		log.Printf("Password not match, \n%v", err)
+		return &models.UserLogin{}, err
+	}
+
+	// kembalikan UserLogin (id dan email) + nil
+	return &userLogin, nil
 }
