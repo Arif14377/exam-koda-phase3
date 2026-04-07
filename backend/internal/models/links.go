@@ -12,3 +12,7 @@ type GetLinks struct {
 	OriginalURL string `json:"original_url"`
 	Slug        string `json:"slug"`
 }
+
+type DeleteLinks struct {
+	LinkId int `json:"link_id"`
+}

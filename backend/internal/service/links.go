@@ -78,14 +78,14 @@ func (l *LinkService) GetUserLinks(userId uuid.UUID) ([]models.GetLinks, error) 
 	return links, nil
 }
 
-func (l *LinkService) DeleteUserLinks(userId uuid.UUID, originalURL string) error {
-	// Validasi userId dan originalURL tidak boleh kosong
-	if userId == uuid.Nil || originalURL == "" {
-		return errors.New("User ID and Original URL cannot be empty.")
+func (l *LinkService) DeleteUserLinks(userId uuid.UUID, linkId int) error {
+	// Validasi userId dan linkId tidak boleh kosong
+	if userId == uuid.Nil || linkId <= 0 {
+		return errors.New("User ID and Link ID cannot be empty.")
 	}
 
 	// Panggil repository untuk delete user link
-	err := l.linkRepo.DeleteUserLinks(userId, originalURL)
+	err := l.linkRepo.DeleteUserLinks(userId, linkId)
 	if err != nil {
 		log.Printf("Failed to delete user link from database.")
 		return err
