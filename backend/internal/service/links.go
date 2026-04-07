@@ -61,3 +61,19 @@ func (l *LinkService) CreateShortLink(data models.RequestLinks) error {
 	}
 	return nil
 }
+
+func (l *LinkService) GetUserLinks(userId uuid.UUID) ([]models.GetLinks, error) {
+	// Validasi userId tidak boleh kosong
+	if userId == uuid.Nil {
+		return nil, errors.New("User ID cannot be empty.")
+	}
+
+	// Panggil repository untuk get user links
+	links, err := l.linkRepo.GetUserLinks(userId)
+	if err != nil {
+		log.Printf("Failed to get user links from database.")
+		return nil, err
+	}
+
+	return links, nil
+}
