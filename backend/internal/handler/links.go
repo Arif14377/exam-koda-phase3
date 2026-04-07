@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/Arif14377/exam-koda-phase3/internal/models"
 	"github.com/Arif14377/exam-koda-phase3/internal/service"
@@ -107,5 +108,62 @@ func (l *LinkHandler) GetUserLinks(c *gin.Context) {
 		"success": true,
 		"message": "Successfully get links.",
 		"data":    links,
+	})
+}
+
+func (l *LinkHandler) DeleteUserLinks(c *gin.Context) {
+	// ambil user_id dari context, jika kosong kembalikan 401
+	userIdString := c.GetString("userId")
+	if userIdString == "" {
+		log.Printf("Empty user ID in context")
+		c.JSON(http.StatusUnauthorized, models.Response{
+			Success: false,
+			Message: "Unauthorized access.",
+		})
+		return
+	}
+
+	userId, err := uuid.Parse(userIdString)
+	if err != nil {
+		log.Printf("Failed to parse string into uuid: \n%v", err)
+		c.JSON(http.StatusInternalServerError, models.Response{
+			Success: false,
+			Message: "Something wrong.",
+		})
+		return
+	}
+
+	// ambil link_id dari URL parameter
+	linkIdString := c.Param("id")
+	if linkIdString == "" {
+		c.JSON(http.StatusBadRequest, models.Response{
+			Success: false,
+			Message: "Link ID is required",
+		})
+		return
+	}
+
+	linkId, err := strconv.Atoi(linkIdString)
+	if err != nil || linkId <= 0 {
+		c.JSON(http.StatusBadRequest, models.Response{
+			Success: false,
+			Message: "Invalid Link ID",
+		})
+		return
+	}
+
+	// Panggil service
+	err = l.linkService.DeleteUserLinks(userId, linkId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Response{
+			Success: false,
+			Message: "Something wrong",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.Response{
+		Success: true,
+		Message: "Link deleted successfully.",
 	})
 }
