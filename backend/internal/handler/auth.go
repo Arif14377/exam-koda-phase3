@@ -19,7 +19,7 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 	}
 }
 
-func (h *AuthHandler) Register(c *gin.Context) {
+func (a *AuthHandler) Register(c *gin.Context) {
 	user := models.AuthUser{}
 	err := c.ShouldBindJSON(&user)
 	if err != nil {
@@ -31,7 +31,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	err = h.authService.Register(user)
+	err = a.authService.Register(user)
 	if err != nil {
 		log.Printf("Failed to register: \n%v", err)
 		c.JSON(http.StatusUnauthorized, models.Response{
@@ -44,5 +44,40 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	c.JSON(http.StatusOK, models.Response{
 		Success: true,
 		Message: "Registration successful.",
+	})
+}
+
+func (a *AuthHandler) Login(c *gin.Context) {
+	user := models.AuthUser{}
+	err := c.ShouldBindJSON(&user)
+	if err != nil {
+		log.Printf("Invalid input: \n%v", err)
+		c.JSON(http.StatusUnauthorized, models.Response{
+			Success: false,
+			Message: "Unauthorized",
+		})
+		return
+	}
+
+	// kirim data ke service
+	userLogin, token, err := a.authService.Login(user)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.Response{
+			Success: false,
+			Message: "Incorrect email or password.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.Response{
+		Success: true,
+		Message: "Login successful.",
+		Results: models.Session{
+			Token: token,
+			User: models.UserSession{
+				Id:    userLogin.Id,
+				Email: userLogin.Email,
+			},
+		},
 	})
 }

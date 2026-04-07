@@ -5,3 +5,8 @@ type Response struct {
 	Message string `json:"message"`
 	Results any    `json:"results"`
 }
+
+type Session struct {
+	Token string      `json:"token"`
+	User  UserSession `json:"user"`
+}

@@ -26,5 +26,10 @@ type UserEmail struct {
 type UserLogin struct {
 	Id       uuid.UUID `json:"id"`
 	Email    string    `json:"email"`
-	Password string    `json:"password"`
+	Password string    `json:"password" db:"password_hash"`
+}
+
+type UserSession struct {
+	Id    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
 }

@@ -25,6 +25,7 @@ func main() {
 	auth := router.Group("/auth")
 	{
 		auth.POST("/register", authHandler.Register)
+		auth.POST("/login", authHandler.Login)
 	}
 
 	// router.GET("/ping", func(c *gin.Context) {
