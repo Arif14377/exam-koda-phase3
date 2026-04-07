@@ -62,6 +62,7 @@ func (l *LinkHandler) CreateShortLink(c *gin.Context) {
 			Success: false,
 			Message: "Something wrong",
 		})
+		return
 	}
 
 	c.JSON(http.StatusCreated, models.Response{
