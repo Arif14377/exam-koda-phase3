@@ -167,3 +167,28 @@ func (l *LinkHandler) DeleteUserLinks(c *gin.Context) {
 		Message: "Link deleted successfully.",
 	})
 }
+
+func (l *LinkHandler) RedirectURL(c *gin.Context) {
+	// ambil slug dari URL parameter
+	slug := c.Param("slug")
+	if slug == "" {
+		c.JSON(http.StatusBadRequest, models.Response{
+			Success: false,
+			Message: "Slug is required",
+		})
+		return
+	}
+
+	// Panggil service
+	originalURL, err := l.linkService.GetLinkBySlug(slug)
+	if err != nil {
+		c.JSON(http.StatusNotFound, models.Response{
+			Success: false,
+			Message: "Link not found",
+		})
+		return
+	}
+
+	// Redirect ke original URL
+	c.Redirect(http.StatusMovedPermanently, originalURL)
+}

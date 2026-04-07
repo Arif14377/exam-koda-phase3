@@ -16,3 +16,7 @@ type GetLinks struct {
 type DeleteLinks struct {
 	LinkId int `json:"link_id"`
 }
+
+type RedirectLinks struct {
+	OriginalURL string `db:"original_url"`
+}

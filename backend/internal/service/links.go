@@ -93,3 +93,19 @@ func (l *LinkService) DeleteUserLinks(userId uuid.UUID, linkId int) error {
 
 	return nil
 }
+
+func (l *LinkService) GetLinkBySlug(slug string) (string, error) {
+	// Validasi slug tidak boleh kosong
+	if slug == "" {
+		return "", errors.New("Slug cannot be empty.")
+	}
+
+	// Panggil repository untuk get link by slug
+	originalURL, err := l.linkRepo.GetLinkBySlug(slug)
+	if err != nil {
+		log.Printf("Failed to get link by slug from database.")
+		return "", err
+	}
+
+	return originalURL, nil
+}
