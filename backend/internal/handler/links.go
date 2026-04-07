@@ -104,10 +104,10 @@ func (l *LinkHandler) GetUserLinks(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Successfully get links.",
-		"data":    links,
+	c.JSON(http.StatusOK, models.Response{
+		Success: true,
+		Message: "Successfully get links.",
+		Results: links,
 	})
 }
 
