@@ -35,7 +35,7 @@ func main() {
 	{
 		links.POST("", linkHandler.CreateShortLink)
 		// links.GET("/", linkHandler.GetUserLinks)
-		// links.DELETE("/:id", linkHandler.GetUserLinks)
+		// links.DELETE("/:id", linkHandler.DeleteUserLinks)
 	}
 
 	// router.GET("/:slug", linkHandler.RedirectURL)

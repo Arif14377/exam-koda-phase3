@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/Arif14377/exam-koda-phase3/internal/models"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -27,4 +29,22 @@ func (l *LinksRepo) CreateShortLink(data models.RequestLinks) error {
 	}
 
 	return nil
+}
+
+func (l *LinksRepo) GetUserLinks(userId uuid.UUID) ([]models.GetLinks, error) {
+	querySql := "SELECT original_url, slug FROM links WHERE user_id = $1"
+	rows, err := l.db.Query(context.Background(), querySql, userId)
+	if err != nil {
+		log.Printf("Failed to execute query: \n%v.", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	links, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.GetLinks])
+	if err != nil {
+		log.Printf("Failed to collect rows: \n%v.", err)
+		return nil, err
+	}
+
+	return links, nil
 }
