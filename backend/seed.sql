@@ -1,11 +1,11 @@
-CREATE TABLE IF NOT EXIST users(
+CREATE TABLE IF NOT EXISTS users(
     id uuid default gen_random_uuid() primary key,
     email varchar(50) unique not null,
     password_hash varchar,
     created_at timestamp with time zone default current_timestamp
 );
 
-CREATE TABLE IF NOT EXIST links(
+CREATE TABLE IF NOT EXISTS links(
     id serial primary key,
     user_id uuid not null,
     original_url varchar,
