@@ -38,7 +38,7 @@ func main() {
 		links.DELETE("/:id", linkHandler.DeleteUserLinks)
 	}
 
-	// router.GET("/:slug", linkHandler.RedirectURL)
+	router.GET("/:slug", linkHandler.RedirectURL)
 
 	// router.GET("/ping", func(c *gin.Context) {
 	// 	c.JSON(http.StatusOK, gin.H{

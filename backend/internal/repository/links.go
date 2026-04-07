@@ -59,3 +59,20 @@ func (l *LinksRepo) DeleteUserLinks(userId uuid.UUID, linkId int) error {
 
 	return nil
 }
+
+func (l *LinksRepo) GetLinkBySlug(slug string) (string, error) {
+	querySql := "SELECT original_url FROM links WHERE slug = $1 AND is_deleted = false"
+	rows, err := l.db.Query(context.Background(), querySql, slug)
+	if err != nil {
+		log.Printf("Failed to get rows data: \n%v", err)
+		return "", err
+	}
+
+	result, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[models.RedirectLinks])
+	if err != nil {
+		log.Printf("Failed to query link by slug: \n%v.", err)
+		return "", err
+	}
+
+	return result.OriginalURL, nil
+}
