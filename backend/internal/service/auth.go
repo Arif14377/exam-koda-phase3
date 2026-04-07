@@ -76,9 +76,8 @@ func (a *AuthService) Login(user models.AuthUser) (*models.UserLogin, string, er
 	}
 
 	// Buat token JWT
-	// TODO: install package JWT
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    userLogin.Id,
+		"id":    userLogin.Id.String(),
 		"email": userLogin.Email,
 		"exp":   time.Now().Add(time.Minute * 15).Unix(),
 	})
