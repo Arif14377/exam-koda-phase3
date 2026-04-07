@@ -22,7 +22,7 @@ func main() {
 	container := di.NewContainer()
 
 	authHandler := container.AuthHandler()
-	linksHandler := container.LinksHandler()
+	linkHandler := container.LinkHandler()
 
 	api := router.Group("/api")
 	{
@@ -33,12 +33,12 @@ func main() {
 	links := router.Group("/api/links")
 	links.Use(middleware.AuthMiddleware())
 	{
-		links.POST("", linksHandler.CreateShortLink)
-		links.GET("/", linksHandler.GetUserLinks)
-		links.DELETE("/:id", linksHandler.GetUserLinks)
+		links.POST("", linkHandler.CreateShortLink)
+		// links.GET("/", linkHandler.GetUserLinks)
+		// links.DELETE("/:id", linkHandler.GetUserLinks)
 	}
 
-	router.GET("/:slug", linksHandler.RedirectURL)
+	// router.GET("/:slug", linkHandler.RedirectURL)
 
 	// router.GET("/ping", func(c *gin.Context) {
 	// 	c.JSON(http.StatusOK, gin.H{
