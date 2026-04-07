@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Arif14377/exam-koda-phase3/internal/di"
+	"github.com/Arif14377/exam-koda-phase3/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -21,12 +22,23 @@ func main() {
 	container := di.NewContainer()
 
 	authHandler := container.AuthHandler()
+	linkHandler := container.LinkHandler()
 
-	auth := router.Group("/auth")
+	api := router.Group("/api")
 	{
-		auth.POST("/register", authHandler.Register)
-		auth.POST("/login", authHandler.Login)
+		api.POST("/register", authHandler.Register)
+		api.POST("/login", authHandler.Login)
 	}
+
+	links := router.Group("/api/links")
+	links.Use(middleware.AuthMiddleware())
+	{
+		links.POST("", linkHandler.CreateShortLink)
+		links.GET("/", linkHandler.GetUserLinks)
+		links.DELETE("/:id", linkHandler.DeleteUserLinks)
+	}
+
+	router.GET("/:slug", linkHandler.RedirectURL)
 
 	// router.GET("/ping", func(c *gin.Context) {
 	// 	c.JSON(http.StatusOK, gin.H{

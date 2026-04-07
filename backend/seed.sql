@@ -12,5 +12,6 @@ CREATE TABLE IF NOT EXISTS links(
     slug varchar(50) unique,
     created_at timestamp with time zone default current_timestamp,
     is_deleted boolean not null default false,
-    constraint fk_users foreign key (user_id) references users(id)
+    constraint fk_users foreign key (user_id) references users(id),
+    constraint uq_links_user_original unique (user_id, original_url)
 );
