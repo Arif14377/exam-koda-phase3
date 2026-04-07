@@ -14,14 +14,15 @@ type AuthService struct {
 	userRepo *repository.UserRepo
 }
 
-func NewAuthService(authRepo *repository.AuthRepo) *AuthService {
+func NewAuthService(authRepo *repository.AuthRepo, userRepo *repository.UserRepo) *AuthService {
 	return &AuthService{
 		authRepo: authRepo,
+		userRepo: userRepo,
 	}
 }
 
 // Register
-func (a *AuthService) Register(user *models.AuthUser) error {
+func (a *AuthService) Register(user models.AuthUser) error {
 	// Get user by email
 	isRegistered := a.userRepo.GetUserByEmail(user.Email)
 	if isRegistered {

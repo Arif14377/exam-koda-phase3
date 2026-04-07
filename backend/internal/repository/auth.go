@@ -19,8 +19,8 @@ func NewAuthRepository(db *pgxpool.Pool) *AuthRepo {
 }
 
 // Register
-func (a *AuthRepo) Register(user *models.AuthUser) error {
-	sqlQuery := "INSERT INTO users(email, password) VALUES($1, $2)"
+func (a *AuthRepo) Register(user models.AuthUser) error {
+	sqlQuery := "INSERT INTO users(email, password_hash) VALUES($1, $2)"
 	_, err := a.db.Exec(context.Background(), sqlQuery, user.Email, user.Password)
 	if err != nil {
 		log.Printf("Error while registering user: \n%v", err)
