@@ -70,3 +70,42 @@ func (l *LinkHandler) CreateShortLink(c *gin.Context) {
 		Message: "Short link created.",
 	})
 }
+
+func (l *LinkHandler) GetUserLinks(c *gin.Context) {
+	// ambil user_id dari context, jika kosong kembalikan 401
+	userIdString := c.GetString("userId")
+	if userIdString == "" {
+		log.Printf("Empty user ID in context")
+		c.JSON(http.StatusUnauthorized, models.Response{
+			Success: false,
+			Message: "Unauthorized access.",
+		})
+		return
+	}
+
+	userId, err := uuid.Parse(userIdString)
+	if err != nil {
+		log.Printf("Failed to parse string into uuid: \n%v", err)
+		c.JSON(http.StatusInternalServerError, models.Response{
+			Success: false,
+			Message: "Something wrong.",
+		})
+		return
+	}
+
+	// Panggil service
+	links, err := l.linkService.GetUserLinks(userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Response{
+			Success: false,
+			Message: "Something wrong",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Successfully get links.",
+		"data":    links,
+	})
+}
