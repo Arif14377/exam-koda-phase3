@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import LandingPage from './pages/Landing'
 import Dashboard from './pages/Dashboard'
+import CreateLink from './pages/CreateLink';
 
 function App() {
 
@@ -23,6 +24,10 @@ function App() {
     {
       path: "/dashboard",
       element: <Dashboard/>
+    },
+    {
+      path: "/links",
+      element: <CreateLink/>
     },
   ])
  
