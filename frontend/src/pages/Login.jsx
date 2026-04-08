@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import InputField from "../components/InputField";
-import Button from "../components/Button";
 import Footer from "../components/Footer";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8888";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8888/api/login", {
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

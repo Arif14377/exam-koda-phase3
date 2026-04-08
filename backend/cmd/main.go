@@ -36,7 +36,7 @@ func main() {
 	links.Use(middleware.AuthMiddleware())
 	{
 		links.POST("", linkHandler.CreateShortLink)
-		links.GET("/", linkHandler.GetUserLinks)
+		links.GET("", linkHandler.GetUserLinks)
 		links.DELETE("/:id", linkHandler.DeleteUserLinks)
 	}
 

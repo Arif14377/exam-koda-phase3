@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdContentCopy, MdCheckCircle } from "react-icons/md";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8888";
+
 const HeroBanner = () => {
   const navigate = useNavigate();
   const [urlInput, setUrlInput] = useState("");
@@ -48,7 +50,7 @@ const HeroBanner = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:8888/api/links", {
+      const response = await fetch(`${API_BASE_URL}/api/links`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +70,7 @@ const HeroBanner = () => {
       }
 
       // Generate short link
-      const baseUrl = "http://localhost:8888";
+      const baseUrl = API_BASE_URL;
       const slug = data.results?.slug || data.slug;
       setShortLink(`${baseUrl}/${slug}`);
       setUrlInput("");
