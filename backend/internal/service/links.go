@@ -21,10 +21,10 @@ func NewLinkService(linkRepo *repository.LinksRepo) *LinkService {
 	}
 }
 
-func (l *LinkService) CreateShortLink(data models.RequestLinks) error {
+func (l *LinkService) CreateShortLink(data models.RequestLinks) (string, error) {
 	// jika data.OriginalURL atau data.UserId kosong, kembalikan error
 	if data.OriginalURL == "" || data.UserId == uuid.Nil {
-		return errors.New("Data cannot be empty.")
+		return "", errors.New("Data cannot be empty.")
 	}
 
 	// cek apakah slug kosong? jika kosong, generate slug acak + panggil repository
@@ -32,34 +32,35 @@ func (l *LinkService) CreateShortLink(data models.RequestLinks) error {
 		randomLinks, err := utils.GenerateRandomLinks(6)
 		if err != nil {
 			log.Printf("Failed to generate random short links.")
-			return err
+			return "", err
 		}
 
 		data.Slug = randomLinks
-		err = l.linkRepo.CreateShortLink(data)
+		slug, err := l.linkRepo.CreateShortLink(data)
 		if err != nil {
 			log.Printf("Failed to save slug into database.")
-			return err
+			return "", err
 		}
+		return slug, nil
 	}
 
 	// slug ada isinya, cek apakah slug < 3 || slug > 50, jika ya kembalikan error.
 	if len(data.Slug) < 3 || len(data.Slug) > 50 {
-		return errors.New("Url slug length must be greater than 2 or less than 51.")
+		return "", errors.New("Url slug length must be greater than 2 or less than 51.")
 	}
 
 	// Cek apakah mengandung kata pada slug custom reserved
 	wordReserverd := utils.WordReserved(data.Slug)
 	if wordReserverd {
-		return fmt.Errorf("The word %s has been reserved", data.Slug)
+		return "", fmt.Errorf("The word %s has been reserved", data.Slug)
 	}
 
 	// panggil repository
-	err := l.linkRepo.CreateShortLink(data)
+	slug, err := l.linkRepo.CreateShortLink(data)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return slug, nil
 }
 
 func (l *LinkService) GetUserLinks(userId uuid.UUID) ([]models.GetLinks, error) {

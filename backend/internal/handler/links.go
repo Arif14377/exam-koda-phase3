@@ -56,8 +56,8 @@ func (l *LinkHandler) CreateShortLink(c *gin.Context) {
 
 	data.UserId = userId
 
-	// Panggil repository
-	err = l.linkService.CreateShortLink(data)
+	// Panggil service
+	slug, err := l.linkService.CreateShortLink(data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
@@ -69,6 +69,9 @@ func (l *LinkHandler) CreateShortLink(c *gin.Context) {
 	c.JSON(http.StatusCreated, models.Response{
 		Success: true,
 		Message: "Short link created.",
+		Results: gin.H{
+			"slug": slug,
+		},
 	})
 }
 
