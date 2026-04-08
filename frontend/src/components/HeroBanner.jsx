@@ -16,6 +16,17 @@ const HeroBanner = () => {
     navigate("/register");
   };
 
+  const handleCreateLink = () => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
+    navigate('/links');
+  };
+
   const handleLearnMore = () => {
     console.log("Learn More clicked");
   };

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 
 const navLinks = [
@@ -7,15 +8,46 @@ const navLinks = [
   { label: "Links", href: "/links" },
 ];
 
-const TopNavBar = ({ activePage = "Dashboard", isLoggedIn = true }) => {
+const TopNavBar = ({ activePage = "Dashboard" }) => {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const token = localStorage.getItem('token');
+  const isLoggedIn = !!token;
+
+  const handleNavClick = (href) => {
+    setMenuOpen(false);
+    
+    // Cek apakah route memerlukan auth
+    if ((href === "/dashboard" || href === "/links" || href === "/analytics") && !isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+    
+    navigate(href);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setMenuOpen(false);
+    navigate('/');
+  };
+
+  const handleLogoClick = () => {
+    navigate('/');
+  };
 
   return (
     <nav className="w-full bg-white border-b border-gray-200">
       <div className="flex items-center justify-between px-6 py-3">
 
         {/* Logo */}
-        <span className="text-lg font-extrabold text-gray-900">ShortLink</span>
+        <button 
+          onClick={handleLogoClick}
+          className="text-lg font-extrabold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
+        >
+          ShortLink
+        </button>
 
         {/* Desktop Nav Links */}
         <ul className="hidden md:flex items-center gap-1">
@@ -23,8 +55,8 @@ const TopNavBar = ({ activePage = "Dashboard", isLoggedIn = true }) => {
             const isActive = activePage === link.label;
             return (
               <li key={link.label}>
-                <a
-                  href={link.href}
+                <button
+                  onClick={() => handleNavClick(link.href)}
                   className={`px-3 py-2 text-sm font-medium border-b-2 ${
                     isActive
                       ? "text-blue-600 border-blue-600"
@@ -32,7 +64,7 @@ const TopNavBar = ({ activePage = "Dashboard", isLoggedIn = true }) => {
                   }`}
                 >
                   {link.label}
-                </a>
+                </button>
               </li>
             );
           })}
@@ -40,17 +72,29 @@ const TopNavBar = ({ activePage = "Dashboard", isLoggedIn = true }) => {
 
         {/* Desktop Auth Buttons */}
         <div className="hidden md:flex items-center gap-2">
-          {!isLoggedIn && (
-            <a href="/login" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900">
-              Login
-            </a>
+          {!isLoggedIn ? (
+            <>
+              <button 
+                onClick={() => navigate('/login')} 
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 cursor-pointer"
+              >
+                Login
+              </button>
+              <button 
+                onClick={() => navigate('/register')} 
+                className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 cursor-pointer"
+              >
+                Sign Up
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 cursor-pointer"
+            >
+              Logout
+            </button>
           )}
-          <a
-            href="/logout"
-            className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-          >
-            Logout
-          </a>
         </div>
 
         {/* Mobile Hamburger */}
@@ -68,26 +112,41 @@ const TopNavBar = ({ activePage = "Dashboard", isLoggedIn = true }) => {
           {navLinks.map((link) => {
             const isActive = activePage === link.label;
             return (
-              <a
+              <button
                 key={link.label}
-                href={link.href}
-                className={`py-2 text-sm font-medium ${
+                onClick={() => handleNavClick(link.href)}
+                className={`py-2 text-sm font-medium text-left cursor-pointer ${
                   isActive ? "text-blue-600" : "text-gray-500"
                 }`}
               >
                 {link.label}
-              </a>
+              </button>
             );
           })}
           <div className="flex gap-2 pt-2">
-            {!isLoggedIn && (
-              <a href="/login" className="flex-1 text-center py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-lg">
-                Login
-              </a>
+            {!isLoggedIn ? (
+              <>
+                <button 
+                  onClick={() => { setMenuOpen(false); navigate('/login'); }}
+                  className="flex-1 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
+                >
+                  Login
+                </button>
+                <button 
+                  onClick={() => { setMenuOpen(false); navigate('/register'); }}
+                  className="flex-1 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg cursor-pointer hover:bg-blue-700"
+                >
+                  Sign Up
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={handleLogout} 
+                className="w-full py-2 text-sm font-semibold text-white bg-red-600 rounded-lg cursor-pointer hover:bg-red-700"
+              >
+                Logout
+              </button>
             )}
-            <a href="/logout" className="flex-1 text-center py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg">
-              Logout
-            </a>
           </div>
         </div>
       )}

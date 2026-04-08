@@ -4,6 +4,8 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import LandingPage from './pages/Landing'
 import Dashboard from './pages/Dashboard'
+import CreateLink from './pages/CreateLink';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
 
@@ -22,7 +24,11 @@ function App() {
     },
     {
       path: "/dashboard",
-      element: <Dashboard/>
+      element: <ProtectedRoute element={<Dashboard/>} />
+    },
+    {
+      path: "/links",
+      element: <ProtectedRoute element={<CreateLink/>} />
     },
   ])
  
