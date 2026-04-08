@@ -1,15 +1,81 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import InputField from "../components/InputField";
 import Button from "../components/Button";
 import Footer from "../components/Footer";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    console.log("Login:", { email, password });
+  const validateForm = () => {
+    // Reset error
+    setError("");
+
+    // Validasi email
+    if (!email || !email.includes("@")) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+
+    // Validasi password tidak boleh kosong
+    if (!password) {
+      setError("Please enter your password");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleLogin = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:8888/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Login failed");
+        setLoading(false);
+        return;
+      }
+
+      // Simpan token dan user data ke localStorage
+      localStorage.setItem("token", data.results.token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: data.results.user.id,
+          email: data.results.user.email,
+        })
+      );
+
+      // Berhasil login, navigate ke landing page
+      navigate("/");
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+      console.error("Login error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -35,6 +101,13 @@ const Login = () => {
           {/* Form */}
           <div className="flex flex-col gap-4">
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             <InputField
               label="Email Address"
               type="email"
@@ -46,7 +119,7 @@ const Login = () => {
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between items-center">
                 <label className="text-sm font-medium text-gray-700">Password</label>
-                <a href="#" className="text-sm text-blue-600">Forgot password?</a>
+                <Link to="#" className="text-sm text-blue-600">Forgot password?</Link>
               </div>
               <InputField
                 type="password"
@@ -56,7 +129,13 @@ const Login = () => {
               />
             </div>
 
-            <Button onClick={handleLogin}>Log In</Button>
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              className="w-full px-5 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors"
+            >
+              {loading ? "Signing in..." : "Log In"}
+            </button>
 
             {/* Divider */}
             <div className="flex items-center gap-3">
@@ -68,7 +147,7 @@ const Login = () => {
             {/* Google Button */}
             <button
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-2.5 px-5 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white cursor-pointer"
+              className="w-full flex items-center justify-center gap-2.5 px-5 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
             >
               <FcGoogle size={20} />
               Sign in with Google
@@ -79,7 +158,7 @@ const Login = () => {
 
         <p className="text-sm text-gray-500">
           Don't have an account?{" "}
-          <a href="/register" className="text-blue-600 font-medium">Sign up</a>
+          <Link to="/register" className="text-blue-600 font-medium">Sign up</Link>
         </p>
       </div>
 
