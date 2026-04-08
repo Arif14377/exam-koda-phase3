@@ -1,16 +1,79 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AiOutlineLink } from "react-icons/ai";
 import InputField from "../components/InputField";
 import Button from "../components/Button";
 import Footer from "../components/Footer";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = () => {
-    console.log("Register:", { email, password, confirmPassword });
+  const validateForm = () => {
+    // Reset error
+    setError("");
+
+    // Validasi email
+    if (!email || !email.includes("@")) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+
+    // Validasi password minimal 6 karakter
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return false;
+    }
+
+    // Validasi password dan confirm password sama
+    if (password !== confirmPassword) {
+      setError("Password and confirm password do not match");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleRegister = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:8888/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          confirm_password: confirmPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Registration failed");
+        setLoading(false);
+        return;
+      }
+
+      // Berhasil register, navigate ke login
+      navigate("/login");
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+      console.error("Register error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,6 +94,13 @@ const Register = () => {
         {/* Card */}
         <div className="bg-white rounded-xl shadow-sm p-8 w-full max-w-md">
           <div className="flex flex-col gap-4">
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
 
             <InputField
               label="Email Address"
@@ -57,7 +127,13 @@ const Register = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
 
-            <Button onClick={handleRegister}>Sign Up</Button>
+            <button
+              onClick={handleRegister}
+              disabled={loading}
+              className="w-full px-5 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors flex items-center justify-center gap-2"
+            >
+              {loading ? "Creating Account..." : "Sign Up"}
+            </button>
 
             <p className="text-xs text-gray-500 text-center leading-relaxed">
               By signing up, you agree to our{" "}
