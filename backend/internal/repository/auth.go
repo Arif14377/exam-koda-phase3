@@ -22,7 +22,7 @@ func NewAuthRepository(db *pgxpool.Pool) *AuthRepo {
 }
 
 // Register
-func (a *AuthRepo) Register(user models.AuthUser) error {
+func (a *AuthRepo) Register(user models.RegisterUser) error {
 	sqlQuery := "INSERT INTO users(email, password_hash) VALUES($1, $2)"
 	_, err := a.db.Exec(context.Background(), sqlQuery, user.Email, user.Password)
 	if err != nil {

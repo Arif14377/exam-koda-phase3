@@ -27,7 +27,19 @@ func NewAuthService(authRepo *repository.AuthRepo, userRepo *repository.UserRepo
 }
 
 // Register
-func (a *AuthService) Register(user models.AuthUser) error {
+func (a *AuthService) Register(user models.RegisterUser) error {
+	// Validasi: password minimal 6 karakter
+	if len(user.Password) < 6 {
+		err := fmt.Errorf("Password must be at least 6 characters.")
+		return err
+	}
+
+	// Validasi: password dan confirm password harus sama
+	if user.Password != user.ConfirmPassword {
+		err := fmt.Errorf("Password and confirm password do not match.")
+		return err
+	}
+
 	// Get user by email
 	isRegistered := a.userRepo.GetUserByEmail(user.Email)
 	if isRegistered {
