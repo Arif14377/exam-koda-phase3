@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { AiOutlineLink } from "react-icons/ai";
 import InputField from "../components/InputField";
 import Button from "../components/Button";
@@ -137,8 +137,8 @@ const Register = () => {
 
             <p className="text-xs text-gray-500 text-center leading-relaxed">
               By signing up, you agree to our{" "}
-              <a href="#" className="text-blue-600">Terms of Service</a> and{" "}
-              <a href="#" className="text-blue-600">Privacy Policy</a>.
+              <Link to="#" className="text-blue-600">Terms of Service</Link> and{" "}
+              <Link to="#" className="text-blue-600">Privacy Policy</Link>.
             </p>
 
           </div>
@@ -146,7 +146,7 @@ const Register = () => {
 
         <p className="text-sm text-gray-500">
           Already have an account?{" "}
-          <a href="/login" className="text-blue-600 font-medium">Log in</a>
+          <Link to="/login" className="text-blue-600 font-medium">Log in</Link>
         </p>
       </div>
 
