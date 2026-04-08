@@ -5,6 +5,8 @@ import InputField from "../components/InputField";
 import Button from "../components/Button";
 import Footer from "../components/Footer";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8888";
+
 const Register = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -46,7 +48,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8888/api/register", {
+      const response = await fetch(`${API_BASE_URL}/api/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
