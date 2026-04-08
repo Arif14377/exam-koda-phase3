@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from './pages/Login'
 import Register from './pages/Register'
 import LandingPage from './pages/Landing'
+import Dashboard from './pages/Dashboard'
 
 function App() {
 
@@ -18,6 +19,10 @@ function App() {
     {
       path: "/login",
       element: <Login/>
+    },
+    {
+      path: "/dashboard",
+      element: <Dashboard/>
     },
   ])
  
