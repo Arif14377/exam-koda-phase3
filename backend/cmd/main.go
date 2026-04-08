@@ -14,6 +14,8 @@ import (
 func main() {
 	router := gin.Default()
 
+	router.Use(middleware.Cors())
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Printf(".env file not found. Using environment variable: \n%v", err)
