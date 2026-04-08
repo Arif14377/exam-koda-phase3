@@ -38,7 +38,7 @@ func (l *LinkHandler) CreateShortLink(c *gin.Context) {
 		log.Printf("Failed to parse string into uuid: \n%v", err)
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
-			Message: "Something wrong.",
+			Message: "Failed to parse uuid from string into uuid type.",
 		})
 		return
 	}
@@ -61,7 +61,7 @@ func (l *LinkHandler) CreateShortLink(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
-			Message: "Something wrong",
+			Message: "Failed to create short link.",
 		})
 		return
 	}
@@ -92,7 +92,7 @@ func (l *LinkHandler) GetUserLinks(c *gin.Context) {
 		log.Printf("Failed to parse string into uuid: \n%v", err)
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
-			Message: "Something wrong.",
+			Message: "Failed to parse uuid from string into uuid type.",
 		})
 		return
 	}
@@ -102,7 +102,7 @@ func (l *LinkHandler) GetUserLinks(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
-			Message: "Something wrong",
+			Message: "Failed to get user's links.",
 		})
 		return
 	}
@@ -131,7 +131,7 @@ func (l *LinkHandler) DeleteUserLinks(c *gin.Context) {
 		log.Printf("Failed to parse string into uuid: \n%v", err)
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
-			Message: "Something wrong.",
+			Message: "Failed to parse uuid from string into uuid type.",
 		})
 		return
 	}
@@ -160,7 +160,7 @@ func (l *LinkHandler) DeleteUserLinks(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
-			Message: "Something wrong",
+			Message: "Failed to delete link.",
 		})
 		return
 	}
