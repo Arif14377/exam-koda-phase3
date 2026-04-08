@@ -12,6 +12,12 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Skip authorization untuk OPTIONS request (preflight CORS)
+		if c.Request.Method == "OPTIONS" {
+			c.Next()
+			return
+		}
+
 		// ambil token dari header
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -29,6 +35,8 @@ func AuthMiddleware() gin.HandlerFunc {
 				Success: false,
 				Message: "invalid token format.",
 			})
+			c.Abort()
+			return
 		}
 
 		// validasi token
