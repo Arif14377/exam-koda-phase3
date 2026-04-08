@@ -21,7 +21,7 @@ func NewLinksRepository(db *pgxpool.Pool) *LinksRepo {
 }
 
 func (l *LinksRepo) CreateShortLink(data models.RequestLinks) error {
-	querySql := "INSERT INTO links (user_id, original_url, slug) VALUES ($1, $2, $3) ON CONFLICT (user_id, original_url) DO UPDATE SET slug = EXCLUDED.slug"
+	querySql := "INSERT INTO links (user_id, original_url, slug) VALUES ($1, $2, $3) ON CONFLICT (user_id, original_url) DO UPDATE SET slug = EXCLUDED.slug, is_deleted = false"
 	_, err := l.db.Exec(context.Background(), querySql, data.UserId, data.OriginalURL, data.Slug)
 	if err != nil {
 		log.Printf("Failed to execute query: \n%v.", err)
