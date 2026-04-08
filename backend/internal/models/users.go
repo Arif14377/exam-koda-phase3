@@ -19,6 +19,12 @@ type AuthUser struct {
 	Password string `json:"password"`
 }
 
+type RegisterUser struct {
+	Email           string `json:"email"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirm_password"`
+}
+
 type UserEmail struct {
 	Email string `json:"string"`
 }

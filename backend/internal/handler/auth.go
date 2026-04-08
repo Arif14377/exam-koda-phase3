@@ -20,7 +20,7 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 }
 
 func (a *AuthHandler) Register(c *gin.Context) {
-	user := models.AuthUser{}
+	user := models.RegisterUser{}
 	err := c.ShouldBindJSON(&user)
 	if err != nil {
 		log.Printf("Invalid input: \n%v", err)
