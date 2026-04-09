@@ -1,5 +1,8 @@
 CREATE TABLE IF NOT EXISTS users(
     id uuid default gen_random_uuid() primary key,
+    full_name varchar(100),
+    occupation varchar(50),
+    badge_pro boolean default false,
     email varchar(50) unique not null,
     password_hash varchar,
     created_at timestamp with time zone default current_timestamp
