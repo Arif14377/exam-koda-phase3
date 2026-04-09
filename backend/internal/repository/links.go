@@ -51,10 +51,14 @@ func (l *LinksRepo) GetUserLinks(userId uuid.UUID) ([]models.GetLinks, error) {
 
 func (l *LinksRepo) DeleteUserLinks(userId uuid.UUID, linkId int) error {
 	querySql := "UPDATE links SET is_deleted = true WHERE user_id = $1 AND id = $2"
-	_, err := l.db.Exec(context.Background(), querySql, userId, linkId)
+	commandTag, err := l.db.Exec(context.Background(), querySql, userId, linkId)
 	if err != nil {
 		log.Printf("Failed to execute query: \n%v.", err)
 		return err
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
 	}
 
 	return nil
