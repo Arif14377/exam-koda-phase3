@@ -14,11 +14,26 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   // Fetch data dari API saat component mount
   useEffect(() => {
     fetchLinks();
   }, []);
+
+  useEffect(() => {
+    if (!isDeleteOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsDeleteOpen(false);
+        setDeleteTargetId(null);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isDeleteOpen]);
 
   const fetchLinks = async () => {
     try {
@@ -57,11 +72,17 @@ const Dashboard = () => {
     }
   };
 
-  const handleDelete = async (linkId) => {
-    if (!confirm('Yakin ingin menghapus link ini?')) return;
+  const handleRequestDelete = (linkId) => {
+    setError('');
+    setDeleteTargetId(linkId);
+    setIsDeleteOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
     try {
-      const response = await fetch(`${API_URL}/api/links/${linkId}`, {
+      setDeleteBusy(true);
+      const response = await fetch(`${API_URL}/api/links/${deleteTargetId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -69,7 +90,9 @@ const Dashboard = () => {
       });
 
       if (response.ok) {
-        setMyLinks(myLinks.filter(link => link.id !== linkId));
+        setMyLinks((prev) => prev.filter(link => link.id !== deleteTargetId));
+        setIsDeleteOpen(false);
+        setDeleteTargetId(null);
       } else {
         if (response.status === 401) {
           logout();
@@ -81,6 +104,8 @@ const Dashboard = () => {
     } catch (err) {
       setError('Terjadi kesalahan saat menghapus');
       console.error(err);
+    } finally {
+      setDeleteBusy(false);
     }
   };
 
@@ -89,6 +114,10 @@ const Dashboard = () => {
     link.original_url?.toLowerCase().includes(search.toLowerCase()) ||
     link.slug?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const deleteTarget = deleteTargetId
+    ? myLinks.find((l) => l.id === deleteTargetId)
+    : null;
 
   return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -143,7 +172,7 @@ const Dashboard = () => {
                       originalUrl={link.original_url}
                       date={new Date(link.created_at).toLocaleDateString('id-ID')}
                       clicks={link.clicks || 0}
-                      onDelete={handleDelete}
+                      onDelete={handleRequestDelete}
                   />
               ))}
             </div>
@@ -159,6 +188,50 @@ const Dashboard = () => {
             </div>
           )}
         </main>
+
+        {isDeleteOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+            onClick={() => { if (!deleteBusy) { setIsDeleteOpen(false); setDeleteTargetId(null); } }}
+          >
+            <div
+              className="w-full max-w-md bg-white rounded-xl border border-gray-200 p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Hapus link ini?</h3>
+              <p className="text-sm text-gray-600 mb-5">
+                Tindakan ini akan menghapus link kamu.
+              </p>
+              {deleteTarget && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-5">
+                  <p className="text-xs text-gray-500 mb-1">Slug</p>
+                  <p className="text-sm font-semibold text-gray-900 break-all">{deleteTarget.slug}</p>
+                  <p className="text-xs text-gray-500 mt-2 mb-1">Original URL</p>
+                  <p className="text-sm text-gray-700 break-all">{deleteTarget.original_url}</p>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  disabled={deleteBusy}
+                  className="w-full border border-gray-200 py-2 rounded-md text-gray-700 font-semibold disabled:opacity-60"
+                  onClick={() => { setIsDeleteOpen(false); setDeleteTargetId(null); }}
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={deleteBusy}
+                  className="w-full bg-red-600 text-white py-2 rounded-md font-semibold disabled:opacity-60"
+                  onClick={handleConfirmDelete}
+                >
+                  {deleteBusy ? 'Menghapus...' : 'Hapus'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Footer showFull/>
       </div>
