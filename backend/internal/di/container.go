@@ -9,10 +9,12 @@ import (
 	"github.com/Arif14377/exam-koda-phase3/internal/repository"
 	"github.com/Arif14377/exam-koda-phase3/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 type Container struct {
 	db *pgxpool.Pool
+	redis *redis.Client
 
 	authRepo    *repository.AuthRepo
 	authService *service.AuthService
@@ -51,6 +53,15 @@ func NewContainer() *Container {
 }
 
 func (c *Container) InitDependencies() {
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr != "" {
+		c.redis = redis.NewClient(&redis.Options{
+			Addr:     redisAddr,
+			Password: os.Getenv("REDIS_PASSWORD"),
+			DB:       0,
+		})
+	}
+
 	c.userRepo = repository.NewUserRepository(c.db)
 	c.authRepo = repository.NewAuthRepository(c.db)
 	c.authService = service.NewAuthService(c.authRepo, c.userRepo)
@@ -59,7 +70,7 @@ func (c *Container) InitDependencies() {
 	c.userService = service.NewUserService(c.userRepo)
 	c.userHandler = handler.NewUserHandler(c.userService)
 
-	c.linkRepo = repository.NewLinksRepository(c.db)
+	c.linkRepo = repository.NewLinksRepository(c.db, c.redis)
 	c.linkService = service.NewLinkService(c.linkRepo)
 	c.linkHandler = handler.NewLinkHandler(c.linkService)
 }

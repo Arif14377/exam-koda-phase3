@@ -2,21 +2,26 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/Arif14377/exam-koda-phase3/internal/models"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 type LinksRepo struct {
-	db *pgxpool.Pool
+	db    *pgxpool.Pool
+	cache *redis.Client
 }
 
-func NewLinksRepository(db *pgxpool.Pool) *LinksRepo {
+func NewLinksRepository(db *pgxpool.Pool, cache *redis.Client) *LinksRepo {
 	return &LinksRepo{
-		db: db,
+		db:    db,
+		cache: cache,
 	}
 }
 
@@ -28,10 +33,22 @@ func (l *LinksRepo) CreateShortLink(data models.RequestLinks) (string, error) {
 		return "", err
 	}
 
+	l.invalidateUserLinksCache(data.UserId)
 	return data.Slug, nil
 }
 
 func (l *LinksRepo) GetUserLinks(userId uuid.UUID) ([]models.GetLinks, error) {
+	cacheKey := l.userLinksCacheKey(userId)
+	if l.cache != nil {
+		cached, err := l.cache.Get(context.Background(), cacheKey).Result()
+		if err == nil && cached != "" {
+			var links []models.GetLinks
+			if err := json.Unmarshal([]byte(cached), &links); err == nil {
+				return links, nil
+			}
+		}
+	}
+
 	querySql := "SELECT id, original_url, slug, created_at FROM links WHERE user_id = $1 AND is_deleted = false"
 	rows, err := l.db.Query(context.Background(), querySql, userId)
 	if err != nil {
@@ -44,6 +61,12 @@ func (l *LinksRepo) GetUserLinks(userId uuid.UUID) ([]models.GetLinks, error) {
 	if err != nil {
 		log.Printf("Failed to collect rows: \n%v.", err)
 		return nil, err
+	}
+
+	if l.cache != nil {
+		if payload, err := json.Marshal(links); err == nil {
+			_ = l.cache.Set(context.Background(), cacheKey, payload, 5*time.Minute).Err()
+		}
 	}
 
 	return links, nil
@@ -61,6 +84,7 @@ func (l *LinksRepo) DeleteUserLinks(userId uuid.UUID, linkId int) error {
 		return pgx.ErrNoRows
 	}
 
+	l.invalidateUserLinksCache(userId)
 	return nil
 }
 
@@ -79,4 +103,15 @@ func (l *LinksRepo) GetLinkBySlug(slug string) (string, error) {
 	}
 
 	return result.OriginalURL, nil
+}
+
+func (l *LinksRepo) userLinksCacheKey(userId uuid.UUID) string {
+	return "user_links:" + userId.String()
+}
+
+func (l *LinksRepo) invalidateUserLinksCache(userId uuid.UUID) {
+	if l.cache == nil {
+		return
+	}
+	_ = l.cache.Del(context.Background(), l.userLinksCacheKey(userId)).Err()
 }
