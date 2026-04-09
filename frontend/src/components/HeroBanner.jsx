@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdContentCopy, MdCheckCircle } from "react-icons/md";
+import { useAuth } from "../contexts/AuthContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8888";
 
 const HeroBanner = () => {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [urlInput, setUrlInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -17,8 +19,6 @@ const HeroBanner = () => {
   };
 
   const handleCreateLink = () => {
-    const token = localStorage.getItem('token');
-    
     if (!token) {
       navigate('/login');
       return;
@@ -59,8 +59,6 @@ const HeroBanner = () => {
     setShortLink("");
 
     try {
-      const token = localStorage.getItem("token");
-
       const response = await fetch(`${API_BASE_URL}/api/links`, {
         method: "POST",
         headers: {

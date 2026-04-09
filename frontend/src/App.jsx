@@ -8,6 +8,7 @@ import CreateLink from './pages/CreateLink';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFoundPage from './pages/NotFound';
 import Profile from './pages/Profile';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
 
@@ -47,7 +48,9 @@ function App() {
   ])
  
   return (
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   )
 }
 

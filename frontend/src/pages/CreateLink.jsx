@@ -3,11 +3,13 @@ import Footer from "../components/Footer"
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiArrowLeft, HiLink, HiOutlineEye, HiOutlineTrendingUp, HiOutlineQrcode, HiLightningBolt } from "react-icons/hi";
+import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8888';
 
 const CreateLink = () => {
     const navigate = useNavigate();
+    const { token, logout } = useAuth();
     const [originalUrl, setOriginalUrl] = useState('');
     const [customSlug, setCustomSlug] = useState('');
     const [loading, setLoading] = useState(false);
@@ -43,8 +45,6 @@ const CreateLink = () => {
 
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
-
             if (!token) {
                 navigate('/login');
                 return;
@@ -69,6 +69,11 @@ const CreateLink = () => {
             const data = await response.json();
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    logout();
+                    navigate('/login');
+                    return;
+                }
                 setError(data.message || 'Gagal membuat short link');
                 return;
             }

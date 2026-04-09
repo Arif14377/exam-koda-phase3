@@ -1,10 +1,11 @@
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const ProtectedRoute = ({ element }) => {
-  const token = localStorage.getItem('token');
+  const { isAuthenticated } = useAuth();
 
   // Jika tidak ada token, redirect ke login
-  if (!token) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

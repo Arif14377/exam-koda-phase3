@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import LinkCard from '../components/LinkCard';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8888';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { token, logout } = useAuth();
   const [myLinks, setMyLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,7 +22,6 @@ const Dashboard = () => {
 
   const fetchLinks = async () => {
     try {
-      const token = localStorage.getItem('token');
       if (!token) {
         navigate('/login');
         return;
@@ -37,7 +38,7 @@ const Dashboard = () => {
 
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.removeItem('token');
+          logout();
           navigate('/login');
           return;
         }
@@ -60,7 +61,6 @@ const Dashboard = () => {
     if (!confirm('Yakin ingin menghapus link ini?')) return;
 
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/links/${linkId}`, {
         method: 'DELETE',
         headers: {
@@ -71,6 +71,11 @@ const Dashboard = () => {
       if (response.ok) {
         setMyLinks(myLinks.filter(link => link.id !== linkId));
       } else {
+        if (response.status === 401) {
+          logout();
+          navigate('/login');
+          return;
+        }
         setError('Gagal menghapus link');
       }
     } catch (err) {

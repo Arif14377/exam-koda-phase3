@@ -3,11 +3,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import InputField from "../components/InputField";
 import Footer from "../components/Footer";
+import { useAuth } from "../contexts/AuthContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8888";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -59,15 +61,10 @@ const Login = () => {
         return;
       }
 
-      // Simpan token dan user data ke localStorage
-      localStorage.setItem("token", data.results.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: data.results.user.id,
-          email: data.results.user.email,
-        })
-      );
+      login(data.results.token, {
+        id: data.results.user.id,
+        email: data.results.user.email,
+      });
 
       // Berhasil login, navigate ke landing page
       navigate("/");

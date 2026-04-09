@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { HiOutlineLink, HiOutlineBell, HiOutlineShieldCheck, HiOutlineLogout, HiPencil } from 'react-icons/hi';
 import Footer from '../components/Footer';
 import TopNavBar from '../components/Navbar';
+import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8888';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(null);
+  const { profile, profileLoading, profileError, updateProfile, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -19,10 +20,6 @@ const Profile = () => {
   const [previewUrl, setPreviewUrl] = useState('');
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
   const resolveImageUrl = (path) => {
     if (!path) return '';
     if (path.startsWith('http://') || path.startsWith('https://')) {
@@ -31,43 +28,28 @@ const Profile = () => {
     return `${API_URL}${path}`;
   };
 
-  const fetchProfile = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
+  useEffect(() => {
+    if (profile) {
+      setFullName(profile.full_name || '');
+      setOccupation(profile.occupation || '');
+      setPreviewUrl(resolveImageUrl(profile.user_image || ''));
+      setLoading(false);
+    } else if (profileLoading) {
+      setLoading(true);
+    }
+  }, [profile, profileLoading]);
 
-      const response = await fetch(`${API_URL}/api/profile`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem('token');
-          navigate('/login');
-          return;
-        }
-        setError(data.message || 'Gagal mengambil data profile');
-        return;
-      }
-
-      setProfile(data.results);
-      setFullName(data.results?.full_name || '');
-      setOccupation(data.results?.occupation || '');
-      setPreviewUrl(resolveImageUrl(data.results?.user_image || ''));
-    } catch (err) {
-      setError('Terjadi kesalahan saat mengambil profile');
-      console.error(err);
-    } finally {
+  useEffect(() => {
+    if (!profileLoading && !profile) {
       setLoading(false);
     }
-  };
+  }, [profileLoading, profile]);
+
+  useEffect(() => {
+    if (profileError) {
+      setError(profileError);
+    }
+  }, [profileError]);
 
   const createdAt = profile?.created_at
     ? new Date(profile.created_at).toLocaleDateString('id-ID', {
@@ -97,12 +79,6 @@ const Profile = () => {
     setSaving(true);
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
       const formData = new FormData();
       formData.append('full_name', fullName);
       formData.append('occupation', occupation);
@@ -110,29 +86,17 @@ const Profile = () => {
         formData.append('user_image', selectedImage);
       }
 
-      const response = await fetch(`${API_URL}/api/profile`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem('token');
+      const result = await updateProfile(formData);
+      if (!result.ok) {
+        if (result.unauthorized) {
+          logout();
           navigate('/login');
           return;
         }
-        setError(data.message || 'Gagal mengupdate profile');
+        setError(result.message || 'Gagal mengupdate profile');
         return;
       }
 
-      setProfile(data.results);
-      setFullName(data.results?.full_name || '');
-      setOccupation(data.results?.occupation || '');
-      setPreviewUrl(resolveImageUrl(data.results?.user_image || ''));
       setSelectedImage(null);
       setIsEditOpen(false);
     } catch (err) {
@@ -261,8 +225,12 @@ const Profile = () => {
             </div>
 
             {/* Tombol logout */}
-            <button className="w-full border border-gray-200 py-3 rounded-lg flex items-center justify-center gap-2 text-gray-600 font-semibold text-sm">
-            <HiOutlineLogout /> Logout Session
+            <button
+              type="button"
+              onClick={() => { logout(); navigate('/'); }}
+              className="w-full border border-gray-200 py-3 rounded-lg flex items-center justify-center gap-2 text-gray-600 font-semibold text-sm"
+            >
+              <HiOutlineLogout /> Logout Session
             </button>
 
         </div>

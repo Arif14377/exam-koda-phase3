@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
+import { useAuth } from "../contexts/AuthContext";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8888';
 
 const navLinks = [
   { label: "Dashboard", href: "/dashboard" },
@@ -11,14 +14,22 @@ const navLinks = [
 const TopNavBar = ({ activePage = "Dashboard" }) => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const token = localStorage.getItem('token');
-  const isLoggedIn = !!token;
+  const { isAuthenticated, logout, profile } = useAuth();
+  const userImage = profile?.user_image || localStorage.getItem('user_image') || '';
+
+  const resolveImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    return `${API_URL}${path}`;
+  };
 
   const handleNavClick = (href) => {
     setMenuOpen(false);
     
     // Cek apakah route memerlukan auth
-    if ((href === "/dashboard" || href === "/links" || href === "/analytics") && !isLoggedIn) {
+    if ((href === "/dashboard" || href === "/links" || href === "/analytics") && !isAuthenticated) {
       navigate('/login');
       return;
     }
@@ -27,8 +38,7 @@ const TopNavBar = ({ activePage = "Dashboard" }) => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout();
     setMenuOpen(false);
     navigate('/');
   };
@@ -72,7 +82,7 @@ const TopNavBar = ({ activePage = "Dashboard" }) => {
 
         {/* Desktop Auth Buttons */}
         <div className="hidden md:flex items-center gap-2">
-          {!isLoggedIn ? (
+          {!isAuthenticated ? (
             <>
               <button 
                 onClick={() => navigate('/login')} 
@@ -88,12 +98,25 @@ const TopNavBar = ({ activePage = "Dashboard" }) => {
               </button>
             </>
           ) : (
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 cursor-pointer"
-            >
-              Logout
-            </button>
+            <>
+              <button
+                onClick={() => navigate('/profile')}
+                className="w-9 h-9 rounded-full border border-gray-200 overflow-hidden bg-gray-100"
+                aria-label="Go to profile"
+              >
+                <img
+                  src={resolveImageUrl(userImage) || "https://placehold.co/80x80"}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 cursor-pointer"
+              >
+                Logout
+              </button>
+            </>
           )}
         </div>
 
@@ -124,7 +147,7 @@ const TopNavBar = ({ activePage = "Dashboard" }) => {
             );
           })}
           <div className="flex gap-2 pt-2">
-            {!isLoggedIn ? (
+          {!isAuthenticated ? (
               <>
                 <button 
                   onClick={() => { setMenuOpen(false); navigate('/login'); }}
@@ -140,12 +163,20 @@ const TopNavBar = ({ activePage = "Dashboard" }) => {
                 </button>
               </>
             ) : (
-              <button 
-                onClick={handleLogout} 
-                className="w-full py-2 text-sm font-semibold text-white bg-red-600 rounded-lg cursor-pointer hover:bg-red-700"
-              >
-                Logout
-              </button>
+              <>
+                <button
+                  onClick={() => { setMenuOpen(false); navigate('/profile'); }}
+                  className="flex-1 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
+                >
+                  Profile
+                </button>
+                <button 
+                  onClick={handleLogout} 
+                  className="flex-1 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg cursor-pointer hover:bg-red-700"
+                >
+                  Logout
+                </button>
+              </>
             )}
           </div>
         </div>
