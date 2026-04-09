@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import CreateLink from './pages/CreateLink';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFoundPage from './pages/NotFound';
+import Profile from './pages/Profile';
 
 function App() {
 
@@ -30,6 +31,10 @@ function App() {
     {
       path: "/links",
       element: <ProtectedRoute element={<CreateLink/>} />
+    },
+    {
+      path: "/profile",
+      element: <ProtectedRoute element={<Profile/>}/>
     },
     {
       path: "/not-found",
