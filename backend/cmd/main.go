@@ -25,6 +25,7 @@ func main() {
 
 	authHandler := container.AuthHandler()
 	linkHandler := container.LinkHandler()
+	userHandler := container.UserHandler()
 
 	api := router.Group("/api")
 	{
@@ -38,6 +39,12 @@ func main() {
 		links.POST("", linkHandler.CreateShortLink)
 		links.GET("", linkHandler.GetUserLinks)
 		links.DELETE("/:id", linkHandler.DeleteUserLinks)
+	}
+
+	profile := router.Group("/api/profile")
+	profile.Use(middleware.AuthMiddleware())
+	{
+		profile.GET("", userHandler.GetProfile)
 	}
 
 	router.GET("/:slug", linkHandler.RedirectURL)
