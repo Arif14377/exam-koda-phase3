@@ -1,6 +1,10 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type RequestLinks struct {
 	UserId      uuid.UUID `json:"user_id"`
@@ -9,8 +13,10 @@ type RequestLinks struct {
 }
 
 type GetLinks struct {
-	OriginalURL string `json:"original_url"`
-	Slug        string `json:"slug"`
+	ID          int       `json:"id" db:"id"`
+	OriginalURL string    `json:"original_url"`
+	Slug        string    `json:"slug"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type DeleteLinks struct {

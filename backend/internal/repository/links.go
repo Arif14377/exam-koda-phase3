@@ -32,7 +32,7 @@ func (l *LinksRepo) CreateShortLink(data models.RequestLinks) (string, error) {
 }
 
 func (l *LinksRepo) GetUserLinks(userId uuid.UUID) ([]models.GetLinks, error) {
-	querySql := "SELECT original_url, slug FROM links WHERE user_id = $1"
+	querySql := "SELECT id, original_url, slug, created_at FROM links WHERE user_id = $1"
 	rows, err := l.db.Query(context.Background(), querySql, userId)
 	if err != nil {
 		log.Printf("Failed to execute query: \n%v.", err)
