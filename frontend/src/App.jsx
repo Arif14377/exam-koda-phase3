@@ -6,6 +6,7 @@ import LandingPage from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import CreateLink from './pages/CreateLink';
 import ProtectedRoute from './components/ProtectedRoute';
+import NotFoundPage from './pages/NotFound';
 
 function App() {
 
@@ -30,6 +31,14 @@ function App() {
       path: "/links",
       element: <ProtectedRoute element={<CreateLink/>} />
     },
+    {
+      path: "/not-found",
+      element: <NotFoundPage/>
+    },
+    {
+      path: "*",
+      element: <NotFoundPage/>
+    }
   ])
  
   return (

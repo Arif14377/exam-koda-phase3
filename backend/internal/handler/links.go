@@ -4,7 +4,9 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/Arif14377/exam-koda-phase3/internal/models"
 	"github.com/Arif14377/exam-koda-phase3/internal/service"
@@ -194,10 +196,12 @@ func (l *LinkHandler) RedirectURL(c *gin.Context) {
 	// Panggil service
 	originalURL, err := l.linkService.GetLinkBySlug(slug)
 	if err != nil {
-		c.JSON(http.StatusNotFound, models.Response{
-			Success: false,
-			Message: "Link not found",
-		})
+		frontendURL := strings.TrimRight(os.Getenv("FRONTEND_URL"), "/")
+		if frontendURL != "" {
+			c.Redirect(http.StatusFound, frontendURL+"/not-found")
+			return
+		}
+		c.Redirect(http.StatusFound, "/not-found")
 		return
 	}
 
