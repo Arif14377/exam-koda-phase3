@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"github.com/Arif14377/exam-koda-phase3/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type LinkHandler struct {
@@ -158,6 +160,13 @@ func (l *LinkHandler) DeleteUserLinks(c *gin.Context) {
 	// Panggil service
 	err = l.linkService.DeleteUserLinks(userId, linkId)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			c.JSON(http.StatusNotFound, models.Response{
+				Success: false,
+				Message: "Link not found.",
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
 			Message: "Failed to delete link.",
