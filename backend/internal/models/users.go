@@ -39,3 +39,13 @@ type UserSession struct {
 	Id    uuid.UUID `json:"id"`
 	Email string    `json:"email"`
 }
+
+type UserProfile struct {
+	Id          uuid.UUID `json:"id"`
+	FullName    string    `json:"full_name"`
+	Occupation  string    `json:"occupation"`
+	BadgePro    bool      `json:"badge_pro"`
+	Email       string    `json:"email"`
+	CreatedAt   time.Time `json:"created_at"`
+	ActiveLinks int       `json:"active_links"`
+}

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/Arif14377/exam-koda-phase3/internal/models"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -35,4 +36,39 @@ func (u *UserRepo) GetUserByEmail(email string) bool {
 	}
 
 	return true
+}
+
+func (u *UserRepo) GetUserProfile(userId uuid.UUID) (*models.UserProfile, error) {
+	sqlQuery := `
+		SELECT
+			u.id,
+			u.full_name,
+			u.occupation,
+			u.badge_pro,
+			u.email,
+			u.created_at,
+			COALESCE(l.active_links, 0) AS active_links
+		FROM users u
+		LEFT JOIN (
+			SELECT user_id, COUNT(*) AS active_links
+			FROM links
+			WHERE is_deleted = false
+			GROUP BY user_id
+		) l ON l.user_id = u.id
+		WHERE u.id = $1
+	`
+	rows, err := u.db.Query(context.Background(), sqlQuery, userId)
+	if err != nil {
+		log.Printf("Failed to get user profile: \n%v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	profile, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[models.UserProfile])
+	if err != nil {
+		log.Printf("User profile not found: \n%v", err)
+		return nil, err
+	}
+
+	return &profile, nil
 }
