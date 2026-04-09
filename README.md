@@ -28,8 +28,7 @@ npm run dev
 ```
 
 ### Database setup
-- See on file seed.sql di ./backend/seed.sql
-
+- See on file seed.sql in ./backend/seed.sql to create database.
 
 
 ## Features
@@ -47,13 +46,16 @@ npm run dev
     - Users can delete their links (soft delete)
 3. Redirect short links
     - Short links redirects to the original URL.
+4. Profile Mangement
+    - User can edit profile (name, occupation, photo profile)
 
 ### UI
 1. Landing page with description and call to action
 2. Registration and login pages
 3. Dashboard showing user's links
-4. From to create new short links (URL + optional custom slug)
+4. Form to create new short links (URL + optional custom slug)
 5. Styling with tailwind css
+6. Profile page
 
 
 ## Tech Stack
