@@ -1,0 +1,34 @@
+package service
+
+import (
+	"errors"
+	"log"
+
+	"github.com/Arif14377/exam-koda-phase3/internal/models"
+	"github.com/Arif14377/exam-koda-phase3/internal/repository"
+	"github.com/google/uuid"
+)
+
+type UserService struct {
+	userRepo *repository.UserRepo
+}
+
+func NewUserService(userRepo *repository.UserRepo) *UserService {
+	return &UserService{
+		userRepo: userRepo,
+	}
+}
+
+func (u *UserService) GetUserProfile(userId uuid.UUID) (*models.UserProfile, error) {
+	if userId == uuid.Nil {
+		return nil, errors.New("User ID cannot be empty.")
+	}
+
+	profile, err := u.userRepo.GetUserProfile(userId)
+	if err != nil {
+		log.Printf("Failed to get user profile from database.")
+		return nil, err
+	}
+
+	return profile, nil
+}
