@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/Arif14377/exam-koda-phase3/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type UserHandler struct {
@@ -43,6 +45,13 @@ func (u *UserHandler) GetProfile(c *gin.Context) {
 
 	profile, err := u.userService.GetUserProfile(userId)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			c.JSON(http.StatusNotFound, models.Response{
+				Success: false,
+				Message: "User not found.",
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
 			Message: "Failed to get user profile.",

@@ -42,8 +42,8 @@ func (u *UserRepo) GetUserProfile(userId uuid.UUID) (*models.UserProfile, error)
 	sqlQuery := `
 		SELECT
 			u.id,
-			u.full_name,
-			u.occupation,
+			COALESCE(u.full_name, '') AS full_name,
+			COALESCE(u.occupation, '') AS occupation,
 			u.badge_pro,
 			u.email,
 			u.created_at,
