@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users(
     full_name varchar(100),
     occupation varchar(50),
     badge_pro boolean default false,
+    user_image varchar,
     email varchar(50) unique not null,
     password_hash varchar,
     created_at timestamp with time zone default current_timestamp
