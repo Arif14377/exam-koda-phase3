@@ -63,11 +63,13 @@ npm run dev
 
 
 ## API Endpoints
-Method | Endpoint | Auth | Description
-POST | /api/register | No | Register new user
-POST | /api/login | No | Login and receive JWT
-POST | /api/links | Yes | Create a short link
-GET | /api/links | Yes | Get user's links
-DELETE | /api/links/:id | Yes | Delete a link
-GET | /:slug | No | Redirect to original URL
-
+| Method | Endpoint | Auth | Description |
+| --- | --- | --- | --- |
+| POST | /api/register | No | Register new user |
+| POST | /api/login | No | Login and receive JWT |
+| POST | /api/links | Yes | Create a short link |
+| GET | /api/links | Yes | Get user's links |
+| DELETE | /api/links/:id | Yes | Delete a link |
+| GET | /:slug | No | Redirect to original URL |
+| GET | /api/profile | Yes | Get user profile |
+| PUT | /api/profile | Yes | Update profile |
