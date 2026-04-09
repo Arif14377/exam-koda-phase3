@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiOutlineLink, HiOutlineBell, HiOutlineShieldCheck, HiOutlineLogout, HiPencil } from 'react-icons/hi';
 import Footer from '../components/Footer';
@@ -11,10 +11,25 @@ const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [occupation, setOccupation] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  const resolveImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    return `${API_URL}${path}`;
+  };
 
   const fetchProfile = async () => {
     try {
@@ -43,6 +58,9 @@ const Profile = () => {
       }
 
       setProfile(data.results);
+      setFullName(data.results?.full_name || '');
+      setOccupation(data.results?.occupation || '');
+      setPreviewUrl(resolveImageUrl(data.results?.user_image || ''));
     } catch (err) {
       setError('Terjadi kesalahan saat mengambil profile');
       console.error(err);
@@ -58,6 +76,72 @@ const Profile = () => {
         year: 'numeric',
       })
     : '-';
+
+  const handleChooseImage = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedImage(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSaving(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('full_name', fullName);
+      formData.append('occupation', occupation);
+      if (selectedImage) {
+        formData.append('user_image', selectedImage);
+      }
+
+      const response = await fetch(`${API_URL}/api/profile`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/login');
+          return;
+        }
+        setError(data.message || 'Gagal mengupdate profile');
+        return;
+      }
+
+      setProfile(data.results);
+      setFullName(data.results?.full_name || '');
+      setOccupation(data.results?.occupation || '');
+      setPreviewUrl(resolveImageUrl(data.results?.user_image || ''));
+      setSelectedImage(null);
+      setIsEditOpen(false);
+    } catch (err) {
+      setError('Terjadi kesalahan saat mengupdate profile');
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <>
@@ -94,11 +178,15 @@ const Profile = () => {
             <div className="flex items-center gap-4 mb-8">
             <div className="relative">
                 <img 
-                src="https://placehold.co/80x80" 
+                src={previewUrl || "https://placehold.co/80x80"} 
                 alt="Avatar" 
                 className="w-20 h-20 rounded-xl bg-gray-200"
                 />
-                <button className="absolute -bottom-2 -right-2 bg-white border border-gray-200 p-1 rounded-full text-blue-600">
+                <button
+                  type="button"
+                  className="absolute -bottom-2 -right-2 bg-white border border-gray-200 p-1 rounded-full text-blue-600"
+                  onClick={() => setIsEditOpen(true)}
+                >
                 <HiPencil size={14} />
                 </button>
             </div>
@@ -141,7 +229,11 @@ const Profile = () => {
                 </p>
                 </div>
             </div>
-            <button className="bg-blue-500 text-white border border-blue-400 px-4 py-2 rounded-md text-sm font-semibold">
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className="bg-blue-500 text-white border border-blue-400 px-4 py-2 rounded-md text-sm font-semibold"
+            >
                 VIEW LINKS
             </button>
             </div>
@@ -174,6 +266,92 @@ const Profile = () => {
             </button>
 
         </div>
+
+        {isEditOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div className="w-full max-w-lg bg-white rounded-xl border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-800">Edit Profile</h3>
+                <button
+                  type="button"
+                  onClick={() => setIsEditOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Close
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateProfile}>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="relative">
+                    <img
+                      src={previewUrl || "https://placehold.co/80x80"}
+                      alt="Avatar"
+                      className="w-20 h-20 rounded-xl bg-gray-200 object-cover"
+                    />
+                    <button
+                      type="button"
+                      className="absolute -bottom-2 -right-2 bg-white border border-gray-200 p-1 rounded-full text-blue-600"
+                      onClick={handleChooseImage}
+                    >
+                      <HiPencil size={14} />
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Upload foto profil (maks 2MB)</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 mb-6">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Full Name</label>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Your full name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Occupation</label>
+                    <input
+                      type="text"
+                      value={occupation}
+                      onChange={(e) => setOccupation(e.target.value)}
+                      className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Your occupation"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    className="w-full border border-gray-200 py-2 rounded-md text-gray-600 font-semibold"
+                    onClick={() => setIsEditOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold disabled:opacity-60"
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Privacy Note */}
         <p className="mt-6 text-[10px] text-gray-400">
