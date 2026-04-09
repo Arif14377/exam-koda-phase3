@@ -47,6 +47,7 @@ func (u *UserRepo) GetUserProfile(userId uuid.UUID) (*models.UserProfile, error)
 			u.badge_pro,
 			u.email,
 			u.created_at,
+			COALESCE(u.user_image, '') AS user_image,
 			COALESCE(l.active_links, 0) AS active_links
 		FROM users u
 		LEFT JOIN (
@@ -71,4 +72,26 @@ func (u *UserRepo) GetUserProfile(userId uuid.UUID) (*models.UserProfile, error)
 	}
 
 	return &profile, nil
+}
+
+func (u *UserRepo) UpdateUserProfile(userId uuid.UUID, fullName, occupation, userImage string) error {
+	sqlQuery := `
+		UPDATE users
+		SET
+			full_name = COALESCE(NULLIF($2, ''), full_name),
+			occupation = COALESCE(NULLIF($3, ''), occupation),
+			user_image = COALESCE(NULLIF($4, ''), user_image)
+		WHERE id = $1
+	`
+	commandTag, err := u.db.Exec(context.Background(), sqlQuery, userId, fullName, occupation, userImage)
+	if err != nil {
+		log.Printf("Failed to update user profile: \n%v", err)
+		return err
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+
+	return nil
 }

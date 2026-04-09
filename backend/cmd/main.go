@@ -45,8 +45,10 @@ func main() {
 	profile.Use(middleware.AuthMiddleware())
 	{
 		profile.GET("", userHandler.GetProfile)
+		profile.PUT("", userHandler.UpdateProfile)
 	}
 
+	router.Static("/uploads", "./uploads")
 	router.GET("/:slug", linkHandler.RedirectURL)
 
 	// router.GET("/ping", func(c *gin.Context) {
